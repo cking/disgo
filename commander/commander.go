@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/zdt/red-panda/dge"
+	"github.com/cking/disgo/dge"
 
 	"github.com/apex/log"
 	"github.com/bwmarrin/discordgo"

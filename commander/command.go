@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"bitbucket.org/zdt/red-panda/dge"
+	"github.com/cking/disgo/dge"
 
 	"github.com/bwmarrin/discordgo"
 )
