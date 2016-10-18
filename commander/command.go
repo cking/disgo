@@ -58,6 +58,8 @@ type CommandContext struct {
 	Author    *dge.User
 	Member    *dge.Member
 	Content   string
+
+	commander *Commander
 }
 
 // Emoji Convert a human readable emoji code to the internal ID, or use an alternative if not found

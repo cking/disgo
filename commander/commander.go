@@ -17,11 +17,15 @@ var (
 )
 
 // New creates a new Commander instance
-func New() *Commander {
-	return &Commander{
+func New(desc string) *Commander {
+	cmder := &Commander{
 		connected: false,
-		Commands:  &Command{},
+		Commands:  &Command{Description: desc},
 	}
+
+	registerHelpCommand(cmder.Commands)
+
+	return cmder
 }
 
 // Commander interface
@@ -62,7 +66,7 @@ func (cmder *Commander) AddCommandCheck(checker func(*CommandContext) (bool, str
 	return nil
 }
 
-func createCommandContext(s *discordgo.Session, m *discordgo.Message) *CommandContext {
+func (cmder *Commander) createCommandContext(s *discordgo.Session, m *discordgo.Message) *CommandContext {
 	var err error
 
 	ctx := &CommandContext{
@@ -70,6 +74,8 @@ func createCommandContext(s *discordgo.Session, m *discordgo.Message) *CommandCo
 		Message:   m,
 		Author:    &dge.User{User: m.Author},
 		Content:   m.Content,
+
+		commander: cmder,
 	}
 
 	ctx.Channel, err = dge.GetChannel(s, m.ChannelID)
@@ -107,7 +113,7 @@ func (cmder *Commander) onMessageCreate(s *discordgo.Session, m *discordgo.Messa
 		return
 	}
 
-	ctx := createCommandContext(s, m.Message)
+	ctx := cmder.createCommandContext(s, m.Message)
 
 	// valid command
 	if cmder.mention.MatchString(ctx.Content) { // mentioned (hard coded)
