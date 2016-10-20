@@ -144,6 +144,15 @@ func (cmder *Commander) onMessageCreate(s *discordgo.Session, m *discordgo.Messa
 		}
 	}
 
+	if command == nil {
+		log.WithFields(log.Fields{
+			"command": commandPath,
+			"author":  ctx.Author,
+			"channel": ctx.Channel,
+		}).Debug("No command found")
+		return
+	}
+
 	log.WithFields(log.Fields{
 		"command": commandPath,
 		"author":  ctx.Author,
