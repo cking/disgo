@@ -46,7 +46,11 @@ func (c *Command) Call(s *discordgo.Session, ctx *CommandContext) error {
 			return nil
 		}
 
-		s.ChannelMessageSend(ctx.Channel.ID, response.message)
+		if response.embed != nil {
+			s.ChannelMessageSendEmbed(ctx.Channel.ID, response.embed)
+		} else {
+			s.ChannelMessageSend(ctx.Channel.ID, response.message)
+		}
 	}
 }
 
@@ -82,6 +86,7 @@ type CommandContext struct {
 	Author    *dge.User
 	Member    *dge.Member
 	Content   string
+	Params    *argparse.Match
 
 	commander *Commander
 }
@@ -105,11 +110,17 @@ func (cc *CommandContext) Emoji(code string, alternative string) string {
 // CommandResponse Response object for commands
 type CommandResponse struct {
 	message string
+	embed   *discordgo.MessageEmbed
 }
 
 // NewCommandResponse Create a CommandResponse with only a message text
 func NewCommandResponse(text string) *CommandResponse {
 	return &CommandResponse{message: text}
+}
+
+// NewCommandEmbedResponse Create a CommandResponse with only an custom embed object
+func NewCommandEmbedResponse(embed *discordgo.MessageEmbed) *CommandResponse {
+	return &CommandResponse{embed: embed}
 }
 
 // NewCommandErrorResponse Create a CommandResponse with an error
