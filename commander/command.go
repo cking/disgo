@@ -8,6 +8,7 @@ import (
 	"github.com/cking/disgo/dge"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/cking/argparse"
 )
 
 // Command The command definition
@@ -47,6 +48,29 @@ func (c *Command) Call(s *discordgo.Session, ctx *CommandContext) error {
 
 		s.ChannelMessageSend(ctx.Channel.ID, response.message)
 	}
+}
+
+// SetHandler sets a command handler function which parses the message content
+// using the given command format
+func (c *Command) SetHandler(format string, impl func(*CommandContext, chan *CommandResponse), parameters argparse.ParameterMap) *argparse.Parser {
+	c.Usage = format
+	cmd := argparse.NewWithoutWhitespace(format)
+	cmd.SetParameters(parameters)
+	c.Handler = func(cc *CommandContext, cr chan *CommandResponse) {
+		match, err := cmd.Parse(cc.Content)
+		if err != nil {
+			cr <- NewCommandErrorResponse(err, "failed to parse command, make sure to use the expected format of `"+c.Usage+"`")
+			close(cr)
+			return
+		}
+
+		// closing the channel is objective of the handler implementation
+		// so no `defer` or explicit close
+		cc.Params = match
+		impl(cc, cr)
+	}
+
+	return cmd
 }
 
 // CommandContext The Context for command execution
