@@ -7,13 +7,16 @@ import (
 	"time"
 
 	"github.com/cking/disgo/dge"
+	"github.com/uber-go/zap"
 
-	"github.com/apex/log"
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
 	reWord = regexp.MustCompile(`^(\S+)`)
+
+	// Log is the library wide logger instance
+	Log = zap.New(zap.NullEncoder())
 )
 
 // New creates a new Commander instance
@@ -101,7 +104,7 @@ func (cmder *Commander) createCommandContext(s *discordgo.Session, m *discordgo.
 
 func onMessageCreateRecover() {
 	if r := recover(); r != nil {
-		log.Errorf("Recovered in %v", r)
+		Log.Error("Recovered", zap.Object("location", r))
 	}
 }
 
@@ -130,7 +133,7 @@ func (cmder *Commander) onMessageCreate(s *discordgo.Session, m *discordgo.Messa
 		return
 	}
 
-	log.WithField("message", ctx.Content).Debug("Possible command incoming")
+	Log.With(zap.String("message", ctx.Content)).Debug("Possible command incoming")
 	command := cmder.Commands
 	commandPath := ""
 	for reWord.MatchString(ctx.Content) {
@@ -145,23 +148,23 @@ func (cmder *Commander) onMessageCreate(s *discordgo.Session, m *discordgo.Messa
 	}
 
 	if command == nil {
-		log.WithFields(log.Fields{
-			"command": commandPath,
-			"author":  ctx.Author,
-			"channel": ctx.Channel,
-		}).Debug("No command found")
+		Log.With(
+			zap.String("command", commandPath),
+			zap.Stringer("author", ctx.Author),
+			zap.Stringer("channel", ctx.Channel),
+		).Debug("No command found")
 		return
 	}
 
-	log.WithFields(log.Fields{
-		"command": commandPath,
-		"author":  ctx.Author,
-		"channel": ctx.Channel,
-		"guild":   ctx.Guild,
-	}).Debug("Found a valid command!")
+	Log.With(
+		zap.String("command", commandPath),
+		zap.Stringer("author", ctx.Author),
+		zap.Stringer("channel", ctx.Channel),
+		zap.Stringer("guild", ctx.Guild),
+	).Debug("Found a valid command!")
 	start := time.Now()
 	s.ChannelTyping(ctx.Channel.ID)
 	command.Call(s, ctx)
 	duration := time.Since(start)
-	log.WithField("duration", duration.String()).Debug("Command executed!")
+	Log.With(zap.Stringer("duration", duration)).Debug("Command executed!")
 }
