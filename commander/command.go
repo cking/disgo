@@ -3,6 +3,7 @@ package commander
 import (
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/cking/disgo/dge"
@@ -48,6 +49,12 @@ func (c *Command) Call(s *discordgo.Session, ctx *CommandContext) error {
 
 		if response.embed != nil {
 			s.ChannelMessageSendEmbed(ctx.Channel.ID, response.embed)
+		} else if response.file != nil {
+			if len(response.message) > 0 {
+				s.ChannelFileSendWithMessage(ctx.Channel.ID, response.message, response.filename, response.file)
+			} else {
+				s.ChannelFileSend(ctx.Channel.ID, response.filename, response.file)
+			}
 		} else {
 			s.ChannelMessageSend(ctx.Channel.ID, response.message)
 		}
@@ -109,8 +116,10 @@ func (cc *CommandContext) Emoji(code string, alternative string) string {
 
 // CommandResponse Response object for commands
 type CommandResponse struct {
-	message string
-	embed   *discordgo.MessageEmbed
+	message  string
+	embed    *discordgo.MessageEmbed
+	file     io.Reader
+	filename string
 }
 
 // NewCommandResponse Create a CommandResponse with only a message text
@@ -129,4 +138,14 @@ func NewCommandErrorResponse(err error, text string) *CommandResponse {
 		return &CommandResponse{message: text}
 	}
 	return &CommandResponse{message: fmt.Sprintf("%v\n```%v```", text, err)}
+}
+
+// NewCommandFileResponse Create a CommandResponse with a file
+func NewCommandFileResponse(file io.Reader, filename string) *CommandResponse {
+	return &CommandResponse{file: file, filename: filename}
+}
+
+// NewCommandFileAndMessageResponse Create a CommandResponse with a file and a message
+func NewCommandFileAndMessageResponse(file io.Reader, filename string, message string) *CommandResponse {
+	return &CommandResponse{file: file, filename: filename, message: message}
 }
