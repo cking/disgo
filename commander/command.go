@@ -67,6 +67,7 @@ func (c *Command) SetHandler(format string, impl func(*CommandContext, chan *Com
 	c.Usage = format
 	cmd := argparse.NewWithoutWhitespace(format)
 	cmd.SetParameters(parameters)
+	cmd.SetParameter("channel", channelParameter)
 	c.Handler = func(cc *CommandContext, cr chan *CommandResponse) {
 		match, err := cmd.Parse(cc.Content)
 		if err != nil {
@@ -94,6 +95,7 @@ type CommandContext struct {
 	Member    *dge.Member
 	Content   string
 	Params    *argparse.Match
+	Session   *discordgo.Session
 
 	commander *Commander
 }

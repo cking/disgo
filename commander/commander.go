@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cking/argparse"
 	"github.com/cking/disgo/dge"
 	"github.com/uber-go/zap"
 
@@ -18,6 +19,21 @@ var (
 	// Log is the library wide logger instance
 	Log = zap.New(zap.NullEncoder())
 )
+
+var reChannel = regexp.MustCompile(`^<#(\d+)>$`)
+var channelParameter = argparse.NewParameter()
+
+func init() {
+	channelParameter.SetMatcher(func(input string) (string, string, bool) {
+		guess := strings.Split(input, " ")[0]
+		if reChannel.MatchString(guess) {
+			matches := reChannel.FindStringSubmatch(guess)
+			return matches[1], strings.TrimSpace(input[len(guess):]), true
+		}
+
+		return "", input, false
+	})
+}
 
 // New creates a new Commander instance
 func New(desc string) *Commander {
@@ -52,6 +68,10 @@ func (cmder *Commander) Connect(session *discordgo.Session) error {
 	cmder.mention = regexp.MustCompile("^<@!?" + cmder.me.ID + ">")
 	session.AddHandler(cmder.onMessageCreate)
 
+	channelParameter.SetConverter(func(id string) (interface{}, error) {
+		return session.Channel(id)
+	})
+
 	return nil
 }
 
@@ -77,6 +97,7 @@ func (cmder *Commander) createCommandContext(s *discordgo.Session, m *discordgo.
 		Message:   m,
 		Author:    &dge.User{User: m.Author},
 		Content:   m.Content,
+		Session:   s,
 
 		commander: cmder,
 	}
