@@ -142,7 +142,7 @@ func (cmder *Commander) onMessageCreate(s *discordgo.Session, m *discordgo.Messa
 	// valid command
 	if cmder.mention.MatchString(ctx.Content) { // mentioned (hard coded)
 		ctx.Content = strings.TrimSpace(cmder.mention.ReplaceAllString(m.Content, ""))
-	} else if cap(cmder.commandChecks) > 0 { // one of the checker functions returns a valid statement
+	} else if len(cmder.commandChecks) > 0 { // one of the checker functions returns a valid statement
 		for _, checker := range cmder.commandChecks {
 			valid, messageContent := checker(ctx)
 			if valid {
