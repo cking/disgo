@@ -3,6 +3,7 @@ package commander
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"unicode/utf8"
 )
@@ -49,7 +50,15 @@ func renderSubcommandHelp(path string, cmd *Command) string {
 	}
 
 	rendered := "\n\n**Available nested Commands**\n*(call help and the subcommand for details)*"
-	for entry, subCmd := range cmd.subCommands {
+
+	entries := make([]string, 0, len(cmd.subCommands))
+
+	for entry := range cmd.subCommands {
+		entries = append(entries, entry)
+	}
+	sort.Strings(entries)
+	for _, entry := range entries {
+		subCmd := cmd.subCommands[entry]
 		rendered = rendered + fmt.Sprintf("\n├ `%v %v`: %v", path, entry, strings.Split(subCmd.Description, "\n")[0])
 	}
 
