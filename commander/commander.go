@@ -9,7 +9,6 @@ import (
 	"github.com/cking/argparse"
 	"github.com/cking/disgo/dge"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,7 +17,7 @@ var (
 	reWord = regexp.MustCompile(`^(\S+)`)
 
 	// Log is the library wide logger instance
-	Log = zap.New(zapcore.NewNopCore())
+	Log = zap.NewNop()
 )
 
 var reChannel = regexp.MustCompile(`^<#(\d+)>$`)
