@@ -8,7 +8,8 @@ import (
 
 	"github.com/cking/argparse"
 	"github.com/cking/disgo/dge"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -17,7 +18,7 @@ var (
 	reWord = regexp.MustCompile(`^(\S+)`)
 
 	// Log is the library wide logger instance
-	Log = zap.New(zap.NullEncoder())
+	Log = zap.New(zapcore.NewNopCore())
 )
 
 var reChannel = regexp.MustCompile(`^<#(\d+)>$`)
@@ -125,7 +126,7 @@ func (cmder *Commander) createCommandContext(s *discordgo.Session, m *discordgo.
 
 func onMessageCreateRecover() {
 	if r := recover(); r != nil {
-		Log.Error("Recovered", zap.Object("location", r))
+		Log.Error("Recovered", zap.Error(r.(error)))
 	}
 }
 
